@@ -74,39 +74,9 @@
     .container {
       max-width: 420px;
       margin: 0 auto;
-      padding: 20px 16px 90px;
+      padding: 20px 16px 80px;
       position: relative;
       z-index: 2;
-    }
-
-    /* ปุ่มเปิด-ปิดเพลง มุมขวาล่าง */
-    .music-btn {
-      position: fixed;
-      bottom: 24px;
-      right: 20px;
-      z-index: 9999;
-      background: #ffffff;
-      border: 1.5px solid var(--pastel-pink);
-      color: var(--primary-pink);
-      padding: 8px 14px;
-      border-radius: 30px;
-      font-size: 13px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      box-shadow: 0 4px 16px rgba(255, 175, 195, 0.4);
-      transition: all 0.2s ease;
-    }
-
-    .music-btn:active {
-      transform: scale(0.92);
-    }
-
-    .music-btn.playing {
-      background: var(--soft-pink);
-      border-color: var(--primary-pink);
     }
 
     /* Top Navigation Bar */
@@ -368,7 +338,6 @@
       margin-top: 4px;
     }
 
-    /* กล่องข้อมูลกรอบสีชมพู */
     .pink-info-box {
       background: var(--soft-pink);
       border: 1.5px dashed var(--pastel-pink);
@@ -493,14 +462,8 @@
 </head>
 <body>
 
-  <!-- ปุ่มเล่น/หยุดเพลง -->
-  <button type="button" class="music-btn" id="musicToggleBtn" onclick="togglePlayMusic()">
-    <span id="musicIcon">🎵</span>
-    <span id="musicText">เปิดเพลง ♡</span>
-  </button>
-
-  <!-- แท็กเสียงตรง ป้องกัน Firebase เก่ามาทับ -->
-  <audio id="bgMusic" loop preload="auto" src="https://files.catbox.moe/l4godr.mp3"></audio>
+  <!-- เพลงออโต้แบบเดิม (Autoplay + Loop) -->
+  <audio id="bgMusic" loop autoplay playsinline src="https://files.catbox.moe/zy1wnq.mp3"></audio>
 
   <!-- Floating Emojis -->
   <div class="floating-container" id="emojiContainer"></div>
@@ -522,7 +485,6 @@
     <div id="homeSection" class="tab-content active">
       <div class="main-card">
         
-        <!-- รูปโปรไฟล์น้องหมีหมวกชมพู -->
         <div class="profile-img-container">
           <img id="mainProfile" class="profile-img" src="https://i.postimg.cc/Qd1mRrk5/image-8.png" alt="Profile">
         </div>
@@ -637,8 +599,8 @@
       <div class="star-select-box">
         <button type="button" class="star-btn active" onclick="setStars(1)">⭐️</button>
         <button type="button" class="star-btn active" onclick="setStars(2)">⭐️</button>
-        <button type="button" class="star-btn active" onclick="setStars(3)">⭐️️</button>
-        <button type="button" class="star-btn active" onclick="setStars(4)">⭐️</button>
+        <button type="button" class="star-btn active" onclick="setStars(3)">⭐️</button>
+        <button type="button" class="star-btn active" onclick="setStars(4)">⭐️️</button>
         <button type="button" class="star-btn active" onclick="setStars(5)">⭐️</button>
       </div>
 
@@ -688,7 +650,6 @@
     }
     const db = firebase.firestore();
 
-    // ดึงค่าการตั้งค่าจากแอดมิน (ยกเว้นเพลง ให้ยึดจากหน้าเว็บตรงๆ เพื่อไม่ให้เจอปัญหาลิงก์หาย)
     db.collection("honmisu_site_config").doc("main_info").onSnapshot(doc => {
       if (doc.exists) {
         const d = doc.data();
@@ -794,37 +755,18 @@
 
     listenReviews();
 
-    // ควบคุมระบบเล่นเพลง
+    // Auto Play Music ระบบเดิม (เล่นอัตโนมัติ + แตะหน้าจอ 1 ครั้งเพื่อเล่น)
     const music = document.getElementById('bgMusic');
-    const musicBtn = document.getElementById('musicToggleBtn');
-    const musicText = document.getElementById('musicText');
-
-    function togglePlayMusic() {
-      if (music.paused) {
-        music.play().then(() => {
-          musicBtn.classList.add('playing');
-          musicText.textContent = 'หยุดเพลง ♡';
-        }).catch(err => {
-          console.log("Play error:", err);
-        });
-      } else {
-        music.pause();
-        musicBtn.classList.remove('playing');
-        musicText.textContent = 'เปิดเพลง ♡';
+    function startMusic() {
+      if (music && music.paused) {
+        music.play().catch(() => {});
       }
     }
-
-    // แตะที่ใดก็ได้ครั้งแรกเพื่อสั่งเริ่มเล่นเพลงทันที
-    function startAudioOnFirstInteraction() {
-      if (music.paused) {
-        music.play().then(() => {
-          musicBtn.classList.add('playing');
-          musicText.textContent = 'หยุดเพลง ♡';
-        }).catch(() => {});
-      }
-    }
-    document.addEventListener('click', startAudioOnFirstInteraction, { once: true });
-    document.addEventListener('touchstart', startAudioOnFirstInteraction, { once: true });
+    window.addEventListener('DOMContentLoaded', () => {
+      startMusic();
+      document.body.addEventListener('click', startMusic, { once: true });
+      document.body.addEventListener('touchstart', startMusic, { once: true });
+    });
 
     // Floating Icons (🪷 🩷 🍥 🐱 🪽)
     const floatIcons = ['🪷', '🩷', '🍥', '🐱', '🪽'];
